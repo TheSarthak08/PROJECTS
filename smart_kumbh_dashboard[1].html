@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Kumbh Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --saffron: #E8560A;
+    --saffron-light: #F97316;
+    --gold: #D4870A;
+    --deep: #1A0F00;
+    --surface: #FFF8F0;
+    --card: #FFFCF7;
+    --border: rgba(232,86,10,0.15);
+    --muted: #8C6A52;
+    --green: #166534;
+    --green-bg: #F0FDF4;
+    --red: #9F1239;
+    --red-bg: #FFF1F2;
+    --blue: #1E3A8A;
+    --blue-bg: #EFF6FF;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--surface);
+    color: var(--deep);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--deep);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    border-bottom: 2px solid var(--saffron);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--saffron);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .logo-text {
+    color: #FFF;
+    font-size: 15px; font-weight: 600; letter-spacing: 0.02em;
+  }
+  .logo-sub { color: rgba(255,255,255,0.4); font-size: 11px; font-weight: 300; }
+  .header-badge {
+    background: rgba(232,86,10,0.2);
+    color: var(--saffron-light);
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 500;
+    border: 1px solid rgba(232,86,10,0.3);
+  }
+
+  /* LAYOUT */
+  .layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 64px);
+  }
+
+  /* SIDEBAR */
+  aside {
+    background: #FFF;
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 0;
+  }
+  .nav-section { margin-bottom: 1.5rem; }
+  .nav-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+    color: var(--muted); padding: 0 1.2rem;
+    text-transform: uppercase; margin-bottom: 0.4rem;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 1.2rem;
+    font-size: 13.5px; font-weight: 400; color: var(--muted);
+    cursor: pointer; transition: all 0.15s;
+    border-left: 3px solid transparent;
+  }
+  .nav-item:hover { background: var(--surface); color: var(--deep); }
+  .nav-item.active {
+    background: rgba(232,86,10,0.07);
+    color: var(--saffron);
+    border-left-color: var(--saffron);
+    font-weight: 500;
+  }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  /* MAIN */
+  main { padding: 2rem; overflow-y: auto; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* PAGE HEADER */
+  .page-header { margin-bottom: 2rem; }
+  .page-title { font-size: 22px; font-weight: 600; color: var(--deep); }
+  .page-subtitle { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* STAT CARDS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 2rem;
+  }
+  .stat-card {
+    background: #FFF;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.2rem;
+    transition: transform 0.15s;
+  }
+  .stat-card:hover { transform: translateY(-2px); }
+  .stat-label { font-size: 12px; color: var(--muted); font-weight: 500; margin-bottom: 6px; }
+  .stat-value { font-size: 26px; font-weight: 600; color: var(--deep); }
+  .stat-delta {
+    font-size: 11px; margin-top: 4px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .stat-delta.up { color: var(--green); }
+  .stat-delta.warn { color: var(--gold); }
+  .stat-accent { width: 3px; height: 36px; border-radius: 2px; }
+  .stat-row { display: flex; align-items: center; gap: 12px; }
+
+  /* TABLE */
+  .card {
+    background: #FFF;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .card-header {
+    padding: 1rem 1.4rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title { font-size: 14px; font-weight: 600; color: var(--deep); }
+  .btn {
+    background: var(--saffron);
+    color: #FFF; border: none; cursor: pointer;
+    padding: 7px 16px; border-radius: 8px;
+    font-size: 12px; font-weight: 500;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .btn:hover { background: var(--saffron-light); }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .btn-outline:hover { background: var(--surface); }
+
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left; font-size: 11px; font-weight: 600;
+    color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 10px 1.4rem; background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 11px 1.4rem; font-size: 13px; border-bottom: 1px solid rgba(0,0,0,0.04); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface); }
+
+  .badge {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 500;
+  }
+  .badge-high { background: var(--red-bg); color: var(--red); }
+  .badge-medium { background: #FFFBEB; color: #92400E; }
+  .badge-low { background: var(--green-bg); color: var(--green); }
+  .badge-open { background: var(--blue-bg); color: var(--blue); }
+  .badge-resolved { background: var(--green-bg); color: var(--green); }
+  .badge-progress { background: #FFF7ED; color: #9A3412; }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 1.4rem; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 12px; font-weight: 500; color: var(--muted); }
+  input, select, textarea {
+    font-family: inherit; font-size: 13px; color: var(--deep);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 12px; background: var(--surface);
+    outline: none; transition: border-color 0.15s;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--saffron); background: #FFF;
+  }
+  textarea { resize: vertical; min-height: 80px; }
+  .form-footer { padding: 0 1.4rem 1.4rem; display: flex; justify-content: flex-end; gap: 10px; }
+
+  /* PROGRESS BAR */
+  .progress-wrap { background: var(--surface); border-radius: 4px; height: 6px; overflow: hidden; }
+  .progress-bar { height: 100%; border-radius: 4px; }
+
+  /* MODULE GRID */
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px; margin-bottom: 2rem;
+  }
+  .module-card {
+    background: #FFF; border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.2rem;
+    cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .module-card:hover {
+    border-color: var(--saffron);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(232,86,10,0.1);
+  }
+  .module-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .module-card h3 { font-size: 13.5px; font-weight: 600; margin-bottom: 3px; }
+  .module-card p { font-size: 12px; color: var(--muted); }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 2rem; right: 2rem;
+    background: var(--deep); color: #FFF;
+    padding: 12px 20px; border-radius: 10px;
+    font-size: 13px;
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s; z-index: 999;
+    border-left: 4px solid var(--saffron);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .module-grid { grid-template-columns: repeat(2, 1fr); }
+    .layout { grid-template-columns: 1fr; }
+    aside { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🕉</div>
+    <div>
+      <div class="logo-text">Smart Kumbh Management</div>
+      <div class="logo-sub">UCS310 · Group 2C13 · TIET Patiala</div>
+    </div>
+  </div>
+  <div class="header-badge">Database Live</div>
+</header>
+
+<div class="layout">
+  <aside>
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <div class="nav-item active" onclick="showPage('dashboard', this)">
+        <span class="nav-icon">📊</span> Dashboard
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Core Modules</div>
+      <div class="nav-item" onclick="showPage('pilgrims', this)">
+        <span class="nav-icon">🧍</span> Pilgrims
+      </div>
+      <div class="nav-item" onclick="showPage('accommodation', this)">
+        <span class="nav-icon">⛺</span> Accommodation
+      </div>
+      <div class="nav-item" onclick="showPage('healthcare', this)">
+        <span class="nav-icon">🏥</span> Healthcare
+      </div>
+      <div class="nav-item" onclick="showPage('incidents', this)">
+        <span class="nav-icon">🚨</span> Incidents
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Services</div>
+      <div class="nav-item" onclick="showPage('transport', this)">
+        <span class="nav-icon">🚌</span> Transportation
+      </div>
+      <div class="nav-item" onclick="showPage('vendors', this)">
+        <span class="nav-icon">🛒</span> Vendors
+      </div>
+      <div class="nav-item" onclick="showPage('lostfound', this)">
+        <span class="nav-icon">🔍</span> Lost & Found
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Admin</div>
+      <div class="nav-item" onclick="showPage('security', this)">
+        <span class="nav-icon">👮</span> Security
+      </div>
+      <div class="nav-item" onclick="showPage('schema', this)">
+        <span class="nav-icon">🗄</span> SQL Schema
+      </div>
+    </div>
+  </aside>
+
+  <main>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div class="page-title">Kumbh Mela 2026 — Control Dashboard</div>
+        <div class="page-subtitle">Real-time management overview · Session Jan–May 2026</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-row">
+            <div class="stat-accent" style="background:var(--saffron)"></div>
+            <div>
+              <div class="stat-label">Registered Pilgrims</div>
+              <div class="stat-value" id="stat-pilgrims">3</div>
+              <div class="stat-delta up">↑ Live count</div>
+            </div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-row">
+            <div class="stat-accent" style="background:#16A34A"></div>
+            <div>
+              <div class="stat-label">Available Tent Beds</div>
+              <div class="stat-value">350</div>
+              <div class="stat-delta up">✓ 100% available</div>
+            </div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-row">
+            <div class="stat-accent" style="background:var(--red)"></div>
+            <div>
+              <div class="stat-label">Open Incidents</div>
+              <div class="stat-value" id="stat-incidents">0</div>
+              <div class="stat-delta warn">⚠ Monitor closely</div>
+            </div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-row">
+            <div class="stat-accent" style="background:var(--blue)"></div>
+            <div>
+              <div class="stat-label">Hospital Beds Free</div>
+              <div class="stat-value">675</div>
+              <div class="stat-delta up">2 hospitals active</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Module overview -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">All System Modules</span></div>
+        <div class="module-grid" style="padding:1.2rem; margin-bottom:0">
+          <div class="module-card" onclick="showPage('pilgrims', null)">
+            <div class="module-icon" style="background:#FFF7ED">🧍</div>
+            <div><h3>Pilgrim Management</h3><p>Registration, profiles, emergency contacts</p></div>
+          </div>
+          <div class="module-card" onclick="showPage('accommodation', null)">
+            <div class="module-icon" style="background:#F0FDF4">⛺</div>
+            <div><h3>Accommodation</h3><p>Tent booking, auto bed triggers</p></div>
+          </div>
+          <div class="module-card" onclick="showPage('healthcare', null)">
+            <div class="module-icon" style="background:#EFF6FF">🏥</div>
+            <div><h3>Healthcare</h3><p>Hospitals, doctors, treatments</p></div>
+          </div>
+          <div class="module-card" onclick="showPage('incidents', null)">
+            <div class="module-icon" style="background:#FFF1F2">🚨</div>
+            <div><h3>Incidents</h3><p>Priority-based emergency tracking</p></div>
+          </div>
+          <div class="module-card" onclick="showPage('transport', null)">
+            <div class="module-icon" style="background:#F5F3FF">🚌</div>
+            <div><h3>Transportation</h3><p>Vehicles, routes, bookings</p></div>
+          </div>
+          <div class="module-card" onclick="showPage('security', null)">
+            <div class="module-icon" style="background:#FFF7ED">👮</div>
+            <div><h3>Security</h3><p>Police, fire stations, officers</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PILGRIMS -->
+    <div class="page" id="page-pilgrims">
+      <div class="page-header">
+        <div class="page-title">Pilgrim Management</div>
+        <div class="page-subtitle">Register and manage pilgrims — maps to <code>Pilgrims</code> table</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Register New Pilgrim</span>
+          <span style="font-size:11px;color:var(--muted)">sp_register_pilgrim()</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" id="p-name" placeholder="e.g. Ramesh Kumar">
+          </div>
+          <div class="form-group">
+            <label>Age *</label>
+            <input type="number" id="p-age" placeholder="e.g. 45" min="1" max="120">
+          </div>
+          <div class="form-group">
+            <label>Gender *</label>
+            <select id="p-gender">
+              <option value="">Select</option>
+              <option>Male</option><option>Female</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Contact Number *</label>
+            <input type="text" id="p-contact" placeholder="10-digit mobile">
+          </div>
+          <div class="form-group">
+            <label>Emergency Contact Name</label>
+            <input type="text" id="p-ec-name" placeholder="Relative name">
+          </div>
+          <div class="form-group">
+            <label>Emergency Contact Phone</label>
+            <input type="text" id="p-ec-phone" placeholder="10-digit mobile">
+          </div>
+          <div class="form-group full">
+            <label>Address</label>
+            <input type="text" id="p-address" placeholder="City, State">
+          </div>
+        </div>
+        <div class="form-footer">
+          <button class="btn btn-outline" onclick="clearForm(['p-name','p-age','p-gender','p-contact','p-ec-name','p-ec-phone','p-address'])">Clear</button>
+          <button class="btn" onclick="registerPilgrim()">Register Pilgrim</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Registered Pilgrims</span>
+          <span style="font-size:11px;color:var(--muted)">SELECT * FROM Pilgrims</span>
+        </div>
+        <table>
+          <thead><tr>
+            <th>ID</th><th>Name</th><th>Age</th><th>Gender</th>
+            <th>Contact</th><th>Address</th><th>Emergency Contact</th>
+          </tr></thead>
+          <tbody id="pilgrims-table">
+            <tr><td>P001</td><td>Ramesh Kumar</td><td>45</td><td>Male</td><td>9876543210</td><td>Delhi</td><td>Suresh Kumar · 9876543211</td></tr>
+            <tr><td>P002</td><td>Sunita Devi</td><td>38</td><td>Female</td><td>9876543220</td><td>Lucknow</td><td>Manoj Devi · 9876543221</td></tr>
+            <tr><td>P003</td><td>Arjun Singh</td><td>22</td><td>Male</td><td>9876543230</td><td>Jaipur</td><td>Kiran Singh · 9876543231</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ACCOMMODATION -->
+    <div class="page" id="page-accommodation">
+      <div class="page-header">
+        <div class="page-title">Accommodation</div>
+        <div class="page-subtitle">Tent bookings with auto bed triggers — <code>Accommodation</code> + <code>Pilgrim_Accommodation</code></div>
+      </div>
+      <div class="stats-grid" style="grid-template-columns:repeat(2,1fr)">
+        <div class="stat-card">
+          <div class="stat-label">Camp Alpha (Zone A)</div>
+          <div class="stat-value" id="alpha-beds">200</div>
+          <div style="margin-top:8px">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px">
+              <span>Occupied</span><span id="alpha-pct">0%</span>
+            </div>
+            <div class="progress-wrap"><div class="progress-bar" id="alpha-bar" style="width:0%;background:var(--saffron)"></div></div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Camp Beta (Zone B)</div>
+          <div class="stat-value" id="beta-beds">150</div>
+          <div style="margin-top:8px">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px">
+              <span>Occupied</span><span id="beta-pct">0%</span>
+            </div>
+            <div class="progress-wrap"><div class="progress-bar" id="beta-bar" style="width:0%;background:var(--saffron)"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Book Accommodation</span>
+          <span style="font-size:11px;color:var(--muted)">sp_book_accommodation() + TRIGGER auto-decrements beds</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Pilgrim ID</label>
+            <select id="b-pilgrim">
+              <option>P001 – Ramesh Kumar</option>
+              <option>P002 – Sunita Devi</option>
+              <option>P003 – Arjun Singh</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Select Camp</label>
+            <select id="b-tent">
+              <option value="alpha">Camp Alpha (Zone A)</option>
+              <option value="beta">Camp Beta (Zone B)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Check-In Date</label>
+            <input type="date" id="b-checkin">
+          </div>
+          <div class="form-group">
+            <label>Check-Out Date (optional)</label>
+            <input type="date" id="b-checkout">
+          </div>
+        </div>
+        <div class="form-footer">
+          <button class="btn" onclick="bookAccommodation()">Book & Run Trigger</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Booking Records</span></div>
+        <table>
+          <thead><tr><th>Booking ID</th><th>Pilgrim</th><th>Camp</th><th>Check-In</th><th>Check-Out</th></tr></thead>
+          <tbody id="bookings-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- HEALTHCARE -->
+    <div class="page" id="page-healthcare">
+      <div class="page-header">
+        <div class="page-title">Healthcare Management</div>
+        <div class="page-subtitle">Hospitals, Doctors, Treatments — <code>vw_doctor_hospital</code> view</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Hospitals & Bed Availability</span><span style="font-size:11px;color:var(--muted)">vw_hospital_beds</span></div>
+        <table>
+          <thead><tr><th>Hospital</th><th>Location</th><th>Total Beds</th><th>Available</th><th>Occupied</th><th>Occupancy</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Kumbh Central Hospital</td><td>Sector 1</td><td>500</td><td>480</td><td>20</td>
+              <td><div class="progress-wrap" style="width:100px"><div class="progress-bar" style="width:4%;background:#16A34A"></div></div></td>
+            </tr>
+            <tr>
+              <td>Mela Medical Camp</td><td>Sector 3</td><td>200</td><td>195</td><td>5</td>
+              <td><div class="progress-wrap" style="width:100px"><div class="progress-bar" style="width:2.5%;background:#16A34A"></div></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Doctors on Duty</span><span style="font-size:11px;color:var(--muted)">SELECT * FROM vw_doctor_hospital</span></div>
+        <table>
+          <thead><tr><th>Doctor</th><th>Specialization</th><th>Hospital</th><th>Contact</th></tr></thead>
+          <tbody>
+            <tr><td>Dr. Anil Sharma</td><td>General Physician</td><td>Kumbh Central Hospital</td><td>9111000001</td></tr>
+            <tr><td>Dr. Priya Gupta</td><td>Emergency Medicine</td><td>Kumbh Central Hospital</td><td>9111000002</td></tr>
+            <tr><td>Dr. Ravi Verma</td><td>Orthopedics</td><td>Mela Medical Camp</td><td>9111000003</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- INCIDENTS -->
+    <div class="page" id="page-incidents">
+      <div class="page-header">
+        <div class="page-title">Incident Management</div>
+        <div class="page-subtitle">Priority-based emergency tracking — <code>Incident_Reports</code> + <code>vw_incident_summary</code></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Report New Incident</span>
+          <span style="font-size:11px;color:var(--muted)">sp_report_incident()</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Incident Description *</label>
+            <textarea id="i-desc" placeholder="Describe the incident clearly..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Priority *</label>
+            <select id="i-priority">
+              <option>High</option><option>Medium</option><option>Low</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <input type="text" id="i-location" placeholder="e.g. Near Triveni Ghat">
+          </div>
+          <div class="form-group">
+            <label>Assign to Station</label>
+            <select id="i-station">
+              <option>Kumbh Main Control</option>
+              <option>Triveni Outpost</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Involve Fire Station?</label>
+            <select id="i-fire">
+              <option value="">No</option>
+              <option>Kumbh Fire HQ</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-footer">
+          <button class="btn" onclick="reportIncident()">Report Incident</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Active Incidents</span><span style="font-size:11px;color:var(--muted)">sp_get_high_priority_incidents()</span></div>
+        <table>
+          <thead><tr><th>ID</th><th>Description</th><th>Priority</th><th>Status</th><th>Location</th><th>Reported</th></tr></thead>
+          <tbody id="incidents-table">
+            <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">No incidents reported yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TRANSPORT -->
+    <div class="page" id="page-transport">
+      <div class="page-header">
+        <div class="page-title">Transportation</div>
+        <div class="page-subtitle">Vehicles and route management — <code>Transportation</code> table</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Available Vehicles</span></div>
+        <table>
+          <thead><tr><th>ID</th><th>Type</th><th>Route</th><th>Capacity</th><th>Contact</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>T001</td><td>Bus</td><td>Prayagraj Station → Sangam</td><td>60</td><td>0532-300001</td><td><span class="badge badge-low">Available</span></td></tr>
+            <tr><td>T002</td><td>E-Rickshaw</td><td>Sector 1 → Ghat</td><td>6</td><td>0532-300002</td><td><span class="badge badge-low">Available</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VENDORS -->
+    <div class="page" id="page-vendors">
+      <div class="page-header">
+        <div class="page-title">Vendor Management</div>
+        <div class="page-subtitle">Shops and purchases — <code>Vendors</code> + <code>Pilgrim_Purchases</code></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Licensed Vendors</span></div>
+        <table>
+          <thead><tr><th>ID</th><th>Vendor Name</th><th>Shop Type</th><th>Location</th><th>License</th></tr></thead>
+          <tbody>
+            <tr><td>V001</td><td>Puja Samagri Store</td><td>Religious items</td><td>Zone C</td><td>LIC001</td></tr>
+            <tr><td>V002</td><td>Annadata Bhandara</td><td>Food stall</td><td>Zone A</td><td>LIC002</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LOST & FOUND -->
+    <div class="page" id="page-lostfound">
+      <div class="page-header">
+        <div class="page-title">Lost & Found</div>
+        <div class="page-subtitle">Item tracking and matching — <code>Lost_And_Found</code> table</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Report Lost / Found Item</span></div>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Item Description *</label>
+            <input type="text" id="lf-desc" placeholder="e.g. Blue bag with documents">
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="lf-status"><option>Lost</option><option>Found</option></select>
+          </div>
+          <div class="form-group">
+            <label>Location Found / Last Seen</label>
+            <input type="text" id="lf-location" placeholder="e.g. Near Triveni Ghat">
+          </div>
+          <div class="form-group">
+            <label>Linked Pilgrim</label>
+            <select id="lf-pilgrim">
+              <option>P001 – Ramesh Kumar</option>
+              <option>P002 – Sunita Devi</option>
+              <option>P003 – Arjun Singh</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-footer">
+          <button class="btn" onclick="reportLostFound()">Submit Report</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Item Records</span></div>
+        <table>
+          <thead><tr><th>ID</th><th>Description</th><th>Status</th><th>Location</th><th>Date</th><th>Pilgrim</th></tr></thead>
+          <tbody id="lf-table">
+            <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">No items reported yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SECURITY -->
+    <div class="page" id="page-security">
+      <div class="page-header">
+        <div class="page-title">Security & Emergency</div>
+        <div class="page-subtitle">Police stations, officers, fire stations</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Police Stations</span></div>
+        <table>
+          <thead><tr><th>ID</th><th>Station Name</th><th>Location</th><th>Contact</th></tr></thead>
+          <tbody>
+            <tr><td>PS001</td><td>Kumbh Main Control</td><td>Sector 2</td><td>100</td></tr>
+            <tr><td>PS002</td><td>Triveni Outpost</td><td>Triveni Ghat</td><td>0532-200002</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Officers on Duty</span></div>
+        <table>
+          <thead><tr><th>Badge</th><th>Name</th><th>Rank</th><th>Station</th></tr></thead>
+          <tbody>
+            <tr><td>UP1001</td><td>SI Mohit Yadav</td><td>Sub-Inspector</td><td>Kumbh Main Control</td></tr>
+            <tr><td>UP1002</td><td>Const. Deepak Pal</td><td>Constable</td><td>Kumbh Main Control</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Fire Stations</span></div>
+        <table>
+          <thead><tr><th>ID</th><th>Name</th><th>Location</th><th>Contact</th><th>Units</th></tr></thead>
+          <tbody>
+            <tr><td>FS001</td><td>Kumbh Fire HQ</td><td>Near Sector 4</td><td>101</td><td>10</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SCHEMA -->
+    <div class="page" id="page-schema">
+      <div class="page-header">
+        <div class="page-title">Database Schema Reference</div>
+        <div class="page-subtitle">All tables normalized to 3NF — download the .sql file to run in MySQL Workbench</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Relational Schema (13 Entities)</span></div>
+        <table>
+          <thead><tr><th>Table</th><th>Primary Key</th><th>Key Foreign Keys</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Pilgrims</strong></td><td>Pilgrim_ID</td><td>—</td><td>Central entity</td></tr>
+            <tr><td><strong>Hospitals</strong></td><td>Hospital_ID</td><td>—</td><td>Healthcare facility</td></tr>
+            <tr><td><strong>Doctors</strong></td><td>Doctor_ID</td><td>Hospital_ID</td><td>Medical staff</td></tr>
+            <tr><td><strong>Police_Stations</strong></td><td>Station_ID</td><td>—</td><td>Security posts</td></tr>
+            <tr><td><strong>Police_Officers</strong></td><td>Officer_ID</td><td>Station_ID</td><td>Officers per station</td></tr>
+            <tr><td><strong>Manager</strong></td><td>Manager_ID</td><td>Station_ID</td><td>Station manager</td></tr>
+            <tr><td><strong>Fire_Stations</strong></td><td>Fire_Station_ID</td><td>—</td><td>Fire response</td></tr>
+            <tr><td><strong>Ghats</strong></td><td>Ghat_ID</td><td>Nearest_Hospital_ID</td><td>Bathing sites</td></tr>
+            <tr><td><strong>Accommodation</strong></td><td>Tent_ID</td><td>—</td><td>Tent capacity</td></tr>
+            <tr><td><strong>Vendors</strong></td><td>Vendor_ID</td><td>—</td><td>Licensed shops</td></tr>
+            <tr><td><strong>Transportation</strong></td><td>Transport_ID</td><td>—</td><td>Vehicles/routes</td></tr>
+            <tr><td><strong>Incident_Reports</strong></td><td>Incident_ID</td><td>Station_ID, Fire_Station_ID</td><td>Emergency log</td></tr>
+            <tr><td><strong>Lost_And_Found</strong></td><td>Item_ID</td><td>Pilgrim_ID</td><td>Item tracking</td></tr>
+            <tr style="background:var(--surface)"><td><em>Pilgrim_Accommodation</em></td><td>Booking_ID</td><td>Pilgrim_ID, Tent_ID</td><td>M:N junction</td></tr>
+            <tr style="background:var(--surface)"><td><em>Pilgrim_Transportation</em></td><td>PT_ID</td><td>Pilgrim_ID, Transport_ID</td><td>M:N junction</td></tr>
+            <tr style="background:var(--surface)"><td><em>Pilgrim_Incidents</em></td><td>PI_ID</td><td>Pilgrim_ID, Incident_ID</td><td>M:N junction</td></tr>
+            <tr style="background:var(--surface)"><td><em>Pilgrim_Treatments</em></td><td>Treatment_ID</td><td>Pilgrim_ID, Doctor_ID, Hospital_ID</td><td>Treatment record</td></tr>
+            <tr style="background:var(--surface)"><td><em>Pilgrim_Purchases</em></td><td>Purchase_ID</td><td>Pilgrim_ID, Vendor_ID</td><td>Purchase record</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">PL/SQL Components Implemented</span></div>
+        <table>
+          <thead><tr><th>Type</th><th>Name</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-open">Trigger</span></td><td>trg_checkin_decrease_beds</td><td>Auto-decrements beds on check-in</td></tr>
+            <tr><td><span class="badge badge-open">Trigger</span></td><td>trg_checkout_restore_beds</td><td>Auto-restores beds on check-out</td></tr>
+            <tr><td><span class="badge badge-open">Trigger</span></td><td>trg_prevent_overbooking</td><td>Blocks booking if beds = 0</td></tr>
+            <tr><td><span class="badge badge-open">Trigger</span></td><td>trg_treatment_decrease_hospital_beds</td><td>Decrements hospital beds</td></tr>
+            <tr><td><span class="badge badge-medium">Procedure</span></td><td>sp_register_pilgrim</td><td>Registers new pilgrim</td></tr>
+            <tr><td><span class="badge badge-medium">Procedure</span></td><td>sp_book_accommodation</td><td>Books tent with transaction</td></tr>
+            <tr><td><span class="badge badge-medium">Procedure</span></td><td>sp_report_incident</td><td>Logs a new incident</td></tr>
+            <tr><td><span class="badge badge-medium">Procedure</span></td><td>sp_audit_open_incidents</td><td>Cursor-based audit log</td></tr>
+            <tr><td><span class="badge badge-resolved">Function</span></td><td>fn_get_tent_availability</td><td>Returns available beds</td></tr>
+            <tr><td><span class="badge badge-resolved">Function</span></td><td>fn_count_pilgrim_incidents</td><td>Counts incidents per pilgrim</td></tr>
+            <tr><td><span class="badge" style="background:#F5F3FF;color:#4C1D95">View</span></td><td>vw_pilgrim_accommodation</td><td>Pilgrim + tent join</td></tr>
+            <tr><td><span class="badge" style="background:#F5F3FF;color:#4C1D95">View</span></td><td>vw_doctor_hospital</td><td>Doctor + hospital join</td></tr>
+            <tr><td><span class="badge" style="background:#F5F3FF;color:#4C1D95">View</span></td><td>vw_incident_summary</td><td>Incidents with station</td></tr>
+            <tr><td><span class="badge" style="background:#F5F3FF;color:#4C1D95">View</span></td><td>vw_hospital_beds</td><td>Bed availability</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ---- State ----
+  let pilgrims = [
+    {id:'P001',name:'Ramesh Kumar',age:45,gender:'Male',contact:'9876543210',address:'Delhi',ec:'Suresh Kumar · 9876543211'},
+    {id:'P002',name:'Sunita Devi',age:38,gender:'Female',contact:'9876543220',address:'Lucknow',ec:'Manoj Devi · 9876543221'},
+    {id:'P003',name:'Arjun Singh',age:22,gender:'Male',contact:'9876543230',address:'Jaipur',ec:'Kiran Singh · 9876543231'}
+  ];
+  let incidents = [];
+  let bookings = [];
+  let lfItems = [];
+  let campBeds = {alpha:{total:200,available:200}, beta:{total:150,available:150}};
+  let pidCount = 4, incCount = 1, bkCount = 1, lfCount = 1;
+
+  // ---- Navigation ----
+  function showPage(id, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if (el) el.classList.add('active');
+    else {
+      document.querySelectorAll('.nav-item').forEach(n => {
+        if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'"+id+"'")) n.classList.add('active');
+      });
+    }
+  }
+
+  // ---- Toast ----
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ---- Pilgrim Registration ----
+  function registerPilgrim() {
+    const name = document.getElementById('p-name').value.trim();
+    const age  = document.getElementById('p-age').value;
+    const gender = document.getElementById('p-gender').value;
+    const contact = document.getElementById('p-contact').value.trim();
+    const addr = document.getElementById('p-address').value.trim();
+    const ecn  = document.getElementById('p-ec-name').value.trim();
+    const ecp  = document.getElementById('p-ec-phone').value.trim();
+
+    if (!name || !age || !gender || !contact) { showToast('⚠ Please fill all required fields.'); return; }
+
+    const id = 'P' + String(pidCount).padStart(3,'0');
+    pilgrims.push({id, name, age, gender, contact, address: addr, ec: ecn + (ecp ? ' · '+ecp : '')});
+    pidCount++;
+
+    const tb = document.getElementById('pilgrims-table');
+    const row = tb.insertRow();
+    row.innerHTML = `<td>${id}</td><td>${name}</td><td>${age}</td><td>${gender}</td><td>${contact}</td><td>${addr}</td><td>${ecn} · ${ecp}</td>`;
+
+    document.getElementById('stat-pilgrims').textContent = pilgrims.length;
+    clearForm(['p-name','p-age','p-gender','p-contact','p-ec-name','p-ec-phone','p-address']);
+    showToast('✓ Pilgrim ' + name + ' registered! (sp_register_pilgrim executed)');
+  }
+
+  // ---- Accommodation Booking ----
+  function bookAccommodation() {
+    const pilgrim = document.getElementById('b-pilgrim').value;
+    const tent = document.getElementById('b-tent').value;
+    const checkin = document.getElementById('b-checkin').value;
+    const checkout = document.getElementById('b-checkout').value;
+
+    if (!checkin) { showToast('⚠ Please select a check-in date.'); return; }
+
+    if (campBeds[tent].available <= 0) {
+      showToast('✗ No beds available — TRIGGER fired: booking blocked!'); return;
+    }
+
+    // Simulate trigger
+    campBeds[tent].available--;
+    const occupied = campBeds[tent].total - campBeds[tent].available;
+    const pct = Math.round((occupied / campBeds[tent].total) * 100);
+
+    if (tent === 'alpha') {
+      document.getElementById('alpha-beds').textContent = campBeds.alpha.available;
+      document.getElementById('alpha-pct').textContent = pct + '%';
+      document.getElementById('alpha-bar').style.width = pct + '%';
+    } else {
+      document.getElementById('beta-beds').textContent = campBeds.beta.available;
+      document.getElementById('beta-pct').textContent = pct + '%';
+      document.getElementById('beta-bar').style.width = pct + '%';
+    }
+
+    const campName = tent === 'alpha' ? 'Camp Alpha' : 'Camp Beta';
+    const bid = 'BK' + String(bkCount).padStart(3,'0'); bkCount++;
+    bookings.push({bid, pilgrim, campName, checkin, checkout});
+
+    const tb = document.getElementById('bookings-table');
+    const row = tb.insertRow();
+    row.innerHTML = `<td>${bid}</td><td>${pilgrim.split(' – ')[1]}</td><td>${campName}</td><td>${checkin}</td><td>${checkout || '—'}</td>`;
+
+    showToast(`✓ Booked! TRIGGER auto-decremented ${campName} beds to ${campBeds[tent].available}`);
+  }
+
+  // ---- Incident Reporting ----
+  function reportIncident() {
+    const desc = document.getElementById('i-desc').value.trim();
+    const priority = document.getElementById('i-priority').value;
+    const location = document.getElementById('i-location').value.trim();
+    if (!desc) { showToast('⚠ Please enter incident description.'); return; }
+
+    const id = 'INC' + String(incCount).padStart(3,'0'); incCount++;
+    const now = new Date().toLocaleDateString('en-IN');
+    incidents.push({id, desc, priority, location, date: now});
+
+    const tb = document.getElementById('incidents-table');
+    if (incidents.length === 1) tb.innerHTML = '';
+    const row = tb.insertRow(0);
+    const pBadge = priority === 'High' ? 'badge-high' : priority === 'Medium' ? 'badge-medium' : 'badge-low';
+    row.innerHTML = `<td>${id}</td><td>${desc.substring(0,40)}${desc.length>40?'...':''}</td>
+      <td><span class="badge ${pBadge}">${priority}</span></td>
+      <td><span class="badge badge-open">Open</span></td>
+      <td>${location || '—'}</td><td>${now}</td>`;
+
+    document.getElementById('stat-incidents').textContent = incidents.length;
+    document.getElementById('i-desc').value = '';
+    document.getElementById('i-location').value = '';
+    showToast(`✓ Incident ${id} reported (sp_report_incident executed)`);
+  }
+
+  // ---- Lost & Found ----
+  function reportLostFound() {
+    const desc = document.getElementById('lf-desc').value.trim();
+    const status = document.getElementById('lf-status').value;
+    const location = document.getElementById('lf-location').value.trim();
+    const pilgrim = document.getElementById('lf-pilgrim').value;
+    if (!desc) { showToast('⚠ Please enter item description.'); return; }
+
+    const id = 'LF' + String(lfCount).padStart(3,'0'); lfCount++;
+    const now = new Date().toLocaleDateString('en-IN');
+
+    const tb = document.getElementById('lf-table');
+    if (lfCount === 2) tb.innerHTML = '';
+    const row = tb.insertRow(0);
+    const sBadge = status === 'Found' ? 'badge-resolved' : 'badge-high';
+    row.innerHTML = `<td>${id}</td><td>${desc}</td>
+      <td><span class="badge ${sBadge}">${status}</span></td>
+      <td>${location || '—'}</td><td>${now}</td><td>${pilgrim.split(' – ')[1]}</td>`;
+
+    document.getElementById('lf-desc').value = '';
+    document.getElementById('lf-location').value = '';
+    showToast(`✓ Item ${id} recorded in Lost_And_Found table`);
+  }
+
+  // ---- Utility ----
+  function clearForm(ids) {
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      else el.value = '';
+    });
+  }
+</script>
+</body>
+</html>
